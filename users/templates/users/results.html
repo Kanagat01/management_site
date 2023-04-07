@@ -1,0 +1,95 @@
+{% extends "users/base.html" %}
+{% block content %}
+<div class="row mt-3 mb-5">
+  <div class="col">
+    <a class="btn btn-outline-info mr-0" href="{% url 'home' %}">Вернуться на главный экран</a>
+  </div>
+</div>
+<div class="row mb-5">
+  <div class="col">
+    <h2>Как сотрудник оценивает свою удовлетворенность</h2>
+    <div class="text-danger d-none" id="error-message1">
+      Сперва выберите сотрудника
+    </div>
+    <select class="form-select mt-3" id="employee-select">
+      <option selected>Выберите сотрудника:</option>
+      {% for employee in employees %}
+        <option value="{{ employee.id }}">{{ employee.fullname }}</option>
+      {% endfor %}
+    </select>
+    <img class="img-fluid d-none" id="employee-photo" src="" alt="employee-results"/>
+  </div>
+</div>
+<div class="row mb-5">
+  <div class="col">
+    <h2>Что о нем думает коллега</h2>
+    <select class="form-select mt-3" id="colleague-select">
+      <option selected>Выберите сотрудника:</option>
+      {% for employee in employees %}
+        <option value="{{ employee.id }}">{{ employee.fullname }}</option>
+      {% endfor %}
+    </select>
+    <img class="img-fluid d-none" id="colleague-photo" src="" alt="employee-results"/>
+  </div>
+</div>
+
+<script>
+  const baseUrl = 'http://127.0.0.1:8000/';
+const employeeSelect = document.getElementById('employee-select');
+const colleagueSelect = document.getElementById('colleague-select');
+const colleagueRows = document.querySelectorAll('.colleague-row');
+let previouslyHiddenOption = null;
+
+if (employeeSelect) {
+  employeeSelect.addEventListener('change', (event) => {
+    const selectedOption = event.target.value;
+    const selectedText = event.target.querySelector(`option[value="${selectedOption}"]`).textContent;
+    
+    if (previouslyHiddenOption) {
+      previouslyHiddenOption.style.display = '';
+    }
+    
+    if (colleagueSelect) { // для results
+      const optionToHide = colleagueSelect.querySelector(`option[value="${selectedOption}"]`);
+
+      if (optionToHide) {
+        optionToHide.style.display = 'none';
+        previouslyHiddenOption = optionToHide;
+      }
+    }})
+    
+  const employeePhoto = document.getElementById('employee-photo');
+  const colleaguePhoto = document.getElementById('colleague-photo');
+    
+  employeeSelect.addEventListener('change', () => {
+    const employeeId = employeeSelect.value;
+    if (employeeId !== 'Выберите сотрудника:') {
+      employeePhoto.classList.remove('d-none');
+      employeePhoto.src = `${baseUrl}static/users/images/${employeeId}_result.png`;
+    } else {
+      employeePhoto.classList.add('d-none');
+      employeePhoto.src = '';
+    }
+  });
+  colleagueSelect.addEventListener('change', () => {
+    const error1 = document.querySelector('#error-message1');
+    const colleagueId = colleagueSelect.value;
+
+    if (employeeSelect.value !== 'Выберите сотрудника:') {
+      error1.classList.add('d-none')
+      if (colleagueId !== 'Выберите сотрудника:') {
+        colleaguePhoto.src = `${baseUrl}static/users/images/${colleagueId}_${employeeSelect.value}_result.png`;
+        colleaguePhoto.classList.remove('d-none');
+      } else {
+        colleaguePhoto.src = '';
+        colleaguePhoto.classList.add('d-none');
+      }
+    }
+    else {
+      colleagueSelect.value = 'Выберите сотрудника:';
+      error1.classList.remove('d-none');
+    }})
+  }
+
+</script>
+{% endblock %}

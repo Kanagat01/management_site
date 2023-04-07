@@ -1,0 +1,192 @@
+{% extends "users/base.html" %}
+{% block content %}
+<form id="feedback-form" method="post">
+{% csrf_token %}
+<div class="mt-3 mb-3 d-flex flex-wrap justify-content-between">
+  <a class="btn btn-outline-info mb-2 ms-3" href="{% url 'home' %}">Вернуться на главный экран</a>
+  <div>
+    <button class="btn btn-outline-info mr-0" type="submit">Сохранить изменения</button>
+  </div>
+</div>
+<div class="row mb-5">
+  <div class="col">
+    <h2>1. Выберите сотрудника для настройки Обратной Связи</h2>
+    <div class="text-danger" id="error-message1" style="display: none;">
+      Выберите сотрудника для настройки Обратной Связи
+    </div>
+
+    {% with employee1=first_setting.employee1_fullname %}
+    <select class="form-select mt-3" id="employee-select" name="employee1_fullname" required>
+      
+      {% if employee1 %}
+        <option>Выберите сотрудника:</option>
+        {% for employee in employees %}
+          {% if employee.fullname == employee1 %}
+            <option value="{{ employee.fullname }}" selected>
+              {{ employee.fullname }}, @{{ employee.telegram_nickname }}
+            </option>
+          {% else %}
+            <option value="{{ employee.fullname }}">
+              {{ employee.fullname }}, @{{ employee.telegram_nickname }}
+            </option>
+          {% endif %}
+        {% endfor %}
+
+      {% else %}
+        <option selected>Выберите сотрудника:</option>
+        {% for employee in employees %}
+          <option value="{{ employee.fullname }}">
+            {{ employee.fullname }}, @{{ employee.telegram_nickname }}
+          </option>
+        {% endfor %}  
+      {% endif %}
+    </select>
+  </div>
+</div>
+<div class="row">
+  <div class="col">
+    <h2>2. Выберите сотрудника для настройки Обратной Связи</h2>
+    <p>В чекбоксе отметьте человека, чью оценку о данном человеке мы будем спрашивать.<br>
+      В выпадающем списке выберете количество раз в месяц.</p>
+  </div>
+</div>
+
+<div class="text-danger" id="error-message2" style="display: none;">
+  Необходимо выбрать хотя бы одного оценивающего и для каждого выбранного оценивающего выбрать количество раз в неделю.
+</div>
+
+{% for employee in employees %}
+{% if employee.fullname != employee1 %}
+{% with feedback=feedback_settings|slice:forloop.counter|first %}
+{% with employee2=feedback.employee2_tg_id %}
+{% with surveys=feedback.surveys_for_month %}
+<div class="row form-control d-flex align-items-center colleague-row">
+  <div class="col">
+    <label class="my-label" for="employee2">
+      {{ employee.fullname }}, @{{ employee.telegram_nickname }}
+    </label>
+  </div>
+  <div class="col d-flex align-items-center">
+      <input class="my-checkbox ms-3" type="checkbox" name="{{ employee.id }}_evaluator"
+        {% if employee.telegram_id == employee2 %} checked {% endif %}>
+      {% if employee1 %}
+      <select class="form-select" name="{{ employee.id }}_surveys_for_month">
+        <option>Количество раз в месяц</option>
+        <option value="1" {% if surveys == "1" %} selected {% endif %}>1</option>
+        <option value="2" {% if surveys == "2" %} selected {% endif %}>2</option>
+        <option value="3" {% if surveys == "3" %} selected {% endif %}>3</option>
+        <option value="4" {% if surveys == "4" %} selected {% endif %}>4</option>
+      </select>
+
+      {% else %}
+      <select class="form-select" name="{{ employee.id }}_surveys_for_month">
+        <option selected>Количество раз в месяц</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+      {% endif %}
+  </div>
+</div>
+{% endwith %}
+{% endwith %}
+{% endwith %}
+
+{% else %}
+<div class="row form-control d-flex align-items-center colleague-row hidden">
+  <div class="col">
+    <label class="my-label" for="employee2">
+      {{ employee.fullname }}, @{{ employee.telegram_nickname }}
+    </label>
+  </div>
+  <div class="col d-flex align-items-center">
+      <input class="my-checkbox ms-3" type="checkbox" name="{{ employee.id }}_evaluator"
+        {% if employee.telegram_id == employee2 %} checked {% endif %}>
+      {% if employee1 %}
+      <select class="form-select" name="{{ employee.id }}_surveys_for_month">
+        <option>Количество раз в месяц</option>
+        <option value="1" {% if surveys == "1" %} selected {% endif %}>1</option>
+        <option value="2" {% if surveys == "2" %} selected {% endif %}>2</option>
+        <option value="3" {% if surveys == "3" %} selected {% endif %}>3</option>
+        <option value="4" {% if surveys == "4" %} selected {% endif %}>4</option>
+      </select>
+
+      {% else %}
+      <select class="form-select" name="{{ employee.id }}_surveys_for_month">
+        <option selected>Количество раз в месяц</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+      {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endwith %}
+</form>
+<script>
+  const baseUrl = 'http://127.0.0.1:8000/';
+const employeeSelect = document.getElementById('employee-select');
+const colleagueSelect = document.getElementById('colleague-select');
+const colleagueRows = document.querySelectorAll('.colleague-row');
+let previouslyHiddenOption = null;
+
+if (employeeSelect) {
+  employeeSelect.addEventListener('change', (event) => {
+    const selectedOption = event.target.value;
+    const selectedText = event.target.querySelector(`option[value="${selectedOption}"]`).textContent;
+    
+    if (previouslyHiddenOption) {
+      previouslyHiddenOption.style.display = '';
+    }
+    else { // для employees
+      colleagueRows.forEach((row) => {
+        if (row.querySelector('label').textContent.trim() === selectedText.trim()) {
+          row.classList.add('hidden');
+        } 
+        else {
+          row.classList.remove('hidden');
+        }
+    })}});
+  };
+
+// минимум одна галочка
+if (document.querySelector('form')) {
+  document.querySelector('form').addEventListener('submit', function(event) {
+    let isChecked = false;
+    const error1 = document.querySelector('#error-message1');
+    if (employeeSelect.value === 'Выберите сотрудника:') {
+      event.preventDefault();
+      error1.style.display = 'flex';
+    } else {
+      error1.style.display = 'none';
+      colleagueRows.forEach(row => {
+        const checkbox = row.querySelector('input[type="checkbox"]');
+        const select = row.querySelector('select');
+        if (checkbox.checked) {
+          isChecked = true;
+          if (!(select.value > 1 || select.value < 4)) {
+            event.preventDefault();
+            select.classList.add('is-invalid');
+          } else {
+            select.classList.remove('is-invalid');
+          }
+        } else {
+          select.classList.remove('is-invalid');
+        }
+      })}
+
+  const error2 = document.querySelector('#error-message2');
+  if (!isChecked) {
+    event.preventDefault();
+    error2.style.display = 'flex';
+  } else {
+    error2.style.display = 'none'
+  }
+})};
+
+</script>
+{% endblock %}
