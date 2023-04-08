@@ -41,11 +41,9 @@ async def send_request(url, data, method="post"):
     async with aiohttp.ClientSession() as session:
         if method == "post":
             async with session.post(url, json=data, headers=headers) as response:
-                await response.json()
                 return response.status
         elif method == "put":
             async with session.put(url, json=data, headers=headers) as response:
-                await response.json()
                 return response.status
         else:
             async with session.get(url, headers=headers) as response:
@@ -104,6 +102,11 @@ async def cancel(message: types.Message):
     await bot.send_message(message.from_user.id, "Изменения отменены", reply_markup=kb_menu)
 
 
+async def cancelState(message: types.Message, state: FSMContext):
+    await state.finish()
+    await bot.send_message(message.from_user.id, "Изменения отменены", reply_markup=kb_menu)
+
+
 async def new_name(message: types.Message):
     await get_info(message.from_user.id)
     await newFullname.fullname.set()
@@ -128,7 +131,7 @@ async def save_new_name(message: types.Message, state: FSMContext):
         await message.answer(f"Новое ФИО {message.text} сохранено", reply_markup=kb_menu)
         await state.finish()
     else:
-        await message.answer("Что-то пошло не так! Попробуйте еще...", reply_markup=kb_cancel)
+        await message.answer(f"{status_code} Что-то пошло не так! Попробуйте еще...", reply_markup=kb_cancel)
 
 
 async def num_of_surveys(message: types.Message):
@@ -206,9 +209,11 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(command_start, commands=["start"], state=None)
     dp.register_message_handler(set_company, state=Registration.company)
     dp.register_message_handler(set_fullname, state=Registration.fullname)
+    dp.register_message_handler(cancel, Text(equals="Отмена"))
+    dp.register_message_handler(cancelState, Text(equals="Отмена"), state=newFullname.fullname)
+    dp.register_message_handler(cancelState, Text(equals="Отмена"), state=newNumOfsurveys.surveys_for_week)
     dp.register_message_handler(new_name, Text(equals="Изменить ФИО"), state=None)
     dp.register_message_handler(num_of_surveys, Text(equals="Изменить количество опросов в неделю\n(от 1 до 5)"), state=None)
     dp.register_message_handler(save_new_name, state=newFullname.fullname)
     dp.register_message_handler(save_num_of_surveys, state=newNumOfsurveys.surveys_for_week)
     dp.register_callback_query_handler(callback_query_handler, lambda c: 'rate' in c.data)
-    dp.register_message_handler(cancel, Text(equals="Отмена"))
