@@ -17,7 +17,7 @@
         <option value="{{ employee.id }}">{{ employee.fullname }}</option>
       {% endfor %}
     </select>
-    <img class="img-fluid d-none" id="employee-photo" src="" alt="employee-results"/>
+    <img class="img-fluid d-none mb-3" id="employee-photo" src="" alt="employee-results"/>
   </div>
 </div>
 <div class="row mb-5">
@@ -29,12 +29,12 @@
         <option value="{{ employee.id }}">{{ employee.fullname }}</option>
       {% endfor %}
     </select>
-    <img class="img-fluid d-none" id="colleague-photo" src="" alt="employee-results"/>
+    <img class="img-fluid d-none mb-3" id="colleague-photo" src="" alt="employee-results"/>
   </div>
 </div>
 
 <script>
-  const baseUrl = 'http://127.0.0.1:8000/';
+const baseUrl = 'http://127.0.0.1:8000/';
 const employeeSelect = document.getElementById('employee-select');
 const colleagueSelect = document.getElementById('colleague-select');
 const colleagueRows = document.querySelectorAll('.colleague-row');
