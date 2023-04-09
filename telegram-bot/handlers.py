@@ -9,7 +9,7 @@ import aiohttp
 
 
 employee_id, company, fullname, surveys_for_week = '', '', '', ''
-
+base_url = 'http://skanagat101.pythonanywhere.com' # 'http://127.0.0.1:8000'
 
 class Registration(StatesGroup):
     company = State()
@@ -23,19 +23,9 @@ class newFullname(StatesGroup):
 class newNumOfsurveys(StatesGroup):
     surveys_for_week = State()
 
-async def get_info(tg_id):
-    objs = await send_request('employees/', data='', method='get')  
-    for obj in objs: # type: ignore
-        if obj['telegram_id'] == tg_id:
-            global employee_id, company, fullname, surveys_for_week
-            employee_id = obj['id']
-            company = obj['company']
-            fullname = obj['fullname']
-            surveys_for_week = obj['surveys_for_week']
-
-
+    
 async def send_request(url, data, method="post"):
-    url = f'http://127.0.0.1:8000/api/{url}'
+    url = f'{base_url}/api/{url}'
     headers = {'Content-Type': 'application/json'}
 
     async with aiohttp.ClientSession() as session:
@@ -49,6 +39,17 @@ async def send_request(url, data, method="post"):
             async with session.get(url, headers=headers) as response:
                 return await response.json()
             
+
+async def get_info(tg_id):
+    objs = await send_request('employees/', data='', method='get')  
+    for obj in objs: # type: ignore
+        if obj['telegram_id'] == tg_id:
+            global employee_id, company, fullname, surveys_for_week
+            employee_id = obj['id']
+            company = obj['company']
+            fullname = obj['fullname']
+            surveys_for_week = obj['surveys_for_week']
+
 
 async def command_start(message: types.Message):
     greeting = "Вас приветствует бот bot_name. Здесь вы можете оценить насколько вам нравится работа в компании, а также оценить работу с коллегами."

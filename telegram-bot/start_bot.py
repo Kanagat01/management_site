@@ -9,12 +9,15 @@ import asyncio
 import tracemalloc
 
 
+base_url = 'http://skanagat101.pythonanywhere.com'  # 'http://127.0.0.1:8000'
+
+
 async def get_company_feedback():
     weekday = datetime.now().weekday()
 
     if weekday in [0, 1, 2, 3, 4]:
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://127.0.0.1:8000/api/employees/') as response:
+            async with session.get(f'{base_url}/api/employees/') as response:
                 if response.status == 200:
                     employees = await response.json()
                     for employee in employees:
@@ -29,7 +32,7 @@ async def get_colleague_feedback():
 
     if weekday == 2:
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://127.0.0.1:8000/api/feedback_settings/') as response:
+            async with session.get(f'{base_url}/api/feedback_settings/') as response:
                 if response.status == 200:
                     objs = await response.json()
                     for obj in objs:
