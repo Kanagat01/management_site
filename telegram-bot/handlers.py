@@ -131,7 +131,7 @@ async def save_new_name(message: types.Message, state: FSMContext):
         await message.answer(f"Новое ФИО {message.text} сохранено", reply_markup=kb_menu)
         await state.finish()
     else:
-        await message.answer(f"{status_code} Что-то пошло не так! Попробуйте еще...", reply_markup=kb_cancel)
+        await message.answer(f"Что-то пошло не так! Попробуйте еще...", reply_markup=kb_cancel)
 
 
 async def num_of_surveys(message: types.Message):
