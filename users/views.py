@@ -133,31 +133,31 @@ def results(request):
 def employees(request):
     company = Company.objects.get(company_name=request.user.company)
     employees = Employee.objects.filter(company=company)
-    feedback_settings = FeedbackSettings.objects.filter(company=company.pk)
+
     if request.method == 'POST':
         employee1_fullname = request.POST.get('employee1_fullname')
-        for employee in employees:
-            if request.POST.get(f"{employee.pk}_evaluator") == "on":
-                surveys_for_month = request.POST.get(
-                    f"{employee.pk}_surveys_for_month")
+        if employee1_fullname is not None:
+            FeedbackSettings.objects.filter(company=company.pk).delete()
+            for employee in employees:
+                if request.POST.get(f"{employee.pk}_evaluator") == "on":
+                    surveys_for_month = request.POST.get(
+                        f"{employee.pk}_surveys_for_month")
 
-                feedback_settings.update_or_create(
-                    employee1_fullname=employee1_fullname,
-                    employee2_tg_id=employee.telegram_id,
-                    surveys_for_month=surveys_for_month,
-                    company=company
-                )
+                    FeedbackSettings.objects.create(
+                        employee1_fullname=employee1_fullname,
+                        employee2_tg_id=employee.telegram_id,
+                        surveys_for_month=surveys_for_month,
+                        company=company
+                    )
+
+        feedback_settings = FeedbackSettings.objects.filter(company=company.pk)
+        tg_ids = [int(id) for id in feedback_settings.values_list(
+            'employee2_tg_id', flat=True)]
+
         context = {
             'employees': employees,
             'first_setting': feedback_settings.first(),
-            'feedback_settings': FeedbackSettings.objects.filter(company=company.pk)
-        }
-        return render(request, 'users/employees.html', context)
-
-    else:
-        context = {
-            'employees': employees,
-            'first_setting': feedback_settings.first(),
-            'feedback_settings': feedback_settings
+            'tg_ids': tg_ids,
+            'surveys_for_month': {id: FeedbackSettings.objects.get(employee2_tg_id=id).surveys_for_month for id in tg_ids}
         }
         return render(request, 'users/employees.html', context)

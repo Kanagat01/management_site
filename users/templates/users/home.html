@@ -3,17 +3,12 @@
 {% block content %}
 <div class="media">
 	<div class="media-body">
-	<h2 class="h2 account-heading">{{ user.username }}</h2>
-	<p class="text-secondary">{{ user.email }}</p>
+		<h2 class="h2 account-heading">{{ user.username }}</h2>
+		<p class="text-secondary">{{ user.email }}</p>
 	</div>
 </div>
 <form method="POST" enctype="multipart/form-data">
 	{% csrf_token %}
-	<fieldset class="form-group">
-		<legend class="border-bottom mb-4">Ваш аккаунт</legend>
-		{{ u_form|crispy }}
-		{{ p_form|crispy }}
-	</fieldset>
 	<div class="form-group d-flex flex-wrap justify-content-between">
 		<div class="d-flex flex-grow-1 text-right">
 		  <button class="btn btn-outline-info mb-3" type="submit">Обновить</button>
@@ -23,7 +18,24 @@
 		  <button class="btn btn-outline-info mb-3 ms-3" type="submit" formaction="{% url 'employees' %}">На страницу сотрудники</button>
 		  <button class="btn btn-outline-info mb-3 ms-3" type="submit" formaction="{% url 'results' %}">На страницу результаты</button>
 		</div>
-	  </div>
+	</div>
+	<fieldset class="form-group">
+		<legend class="border-bottom mb-4">Ваш аккаунт</legend>
+		<div class="text-danger d-none mb-3" id="error">
+			Не забудьте сохранить изменения
+		</div>
+		{{ u_form|crispy }}
+		{{ p_form|crispy }}
+	</fieldset>
 		
 </form>
+<script>
+	const input = document.querySelectorAll('input');
+	input.forEach(element => {
+		element.addEventListener('input', (event) => {
+			console.log("sjdh")
+			document.getElementById("error").classList.remove("d-none");
+		});
+	});
+</script>
 {% endblock content %}
